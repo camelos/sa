@@ -36,7 +36,7 @@
 
         .app-container {
             display: grid;
-            grid-template-columns: 280px 1fr 350px;
+            grid-template-columns: 200px 1fr 450px;
             height: 100vh;
             gap: 1px;
             background: var(--border-color);
@@ -190,6 +190,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             border: 1px solid transparent;
+            position: relative;
         }
 
         .tree-node-content:hover {
@@ -200,6 +201,33 @@
         .tree-node-content.active {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
             border-color: var(--primary-color);
+        }
+
+        .tree-node-content .tree-label-truncated {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tree-node-content:hover .tree-label-full {
+            display: block;
+        }
+
+        .tree-label-full {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            white-space: nowrap;
+            z-index: 100;
+            margin-left: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
         }
 
         .tree-toggle {
@@ -230,6 +258,10 @@
         .tree-label {
             flex: 1;
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 140px;
         }
 
         .tree-actions {
@@ -336,11 +368,67 @@
             resize: none;
             font-family: 'Consolas', 'Monaco', monospace;
             transition: border-color 0.2s ease;
+            overflow-y: auto;
+            outline: none;
+            min-height: 200px;
         }
 
         .editor-textarea:focus {
             outline: none;
             border-color: var(--primary-color);
+        }
+
+        .editor-textarea[contenteditable="true"]:empty:before {
+            content: attr(placeholder);
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        #docContentInput b, #docContentInput strong {
+            font-weight: bold;
+        }
+
+        #docContentInput i, #docContentInput em {
+            font-style: italic;
+        }
+
+        #docContentInput u {
+            text-decoration: underline;
+        }
+
+        #docContentInput s, #docContentInput strike {
+            text-decoration: line-through;
+        }
+
+        #docContentInput h1 {
+            font-size: 2em;
+            margin: 0.67em 0;
+            font-weight: bold;
+        }
+
+        #docContentInput h2 {
+            font-size: 1.5em;
+            margin: 0.75em 0;
+            font-weight: bold;
+        }
+
+        #docContentInput h3 {
+            font-size: 1.17em;
+            margin: 0.83em 0;
+            font-weight: bold;
+        }
+
+        #docContentInput ul, #docContentInput ol {
+            padding-left: 40px;
+            margin: 1em 0;
+        }
+
+        #docContentInput p {
+            margin: 1em 0;
+        }
+
+        #docContentInput div {
+            min-height: 1em;
         }
 
         .editor-stats {
@@ -536,25 +624,25 @@
             </div>
             
             <div class="toolbar">
-                <button class="toolbar-btn" onclick="formatText('bold')" title="Жирный"><b>B</b></button>
-                <button class="toolbar-btn" onclick="formatText('italic')" title="Курсив"><i>I</i></button>
-                <button class="toolbar-btn" onclick="formatText('underline')" title="Подчеркнутый"><u>U</u></button>
-                <button class="toolbar-btn" onclick="formatText('strikeThrough')" title="Зачеркнутый"><s>S</s></button>
-                <button class="toolbar-btn" onclick="formatText('justifyLeft')" title="По левому краю">⬅</button>
-                <button class="toolbar-btn" onclick="formatText('justifyCenter')" title="По центру">↔</button>
-                <button class="toolbar-btn" onclick="formatText('justifyRight')" title="По правому краю">➡</button>
-                <button class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Список">•</button>
-                <button class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Нумерованный список">1.</button>
-                <button class="toolbar-btn" onclick="formatText('formatBlock', 'H1')" title="Заголовок 1">H1</button>
-                <button class="toolbar-btn" onclick="formatText('formatBlock', 'H2')" title="Заголовок 2">H2</button>
-                <button class="toolbar-btn" onclick="formatText('formatBlock', 'H3')" title="Заголовок 3">H3</button>
-                <button class="toolbar-btn" onclick="formatText('formatBlock', 'P')" title="Параграф">¶</button>
-                <button class="toolbar-btn" onclick="formatText('removeFormat')" title="Очистить формат">✖</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('bold')" title="Жирный"><b>B</b></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('italic')" title="Курсив"><i>I</i></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('underline')" title="Подчеркнутый"><u>U</u></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('strikeThrough')" title="Зачеркнутый"><s>S</s></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('justifyLeft')" title="По левому краю">⬅</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('justifyCenter')" title="По центру">↔</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('justifyRight')" title="По правому краю">➡</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('insertUnorderedList')" title="Список">•</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('insertOrderedList')" title="Нумерованный список">1.</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('formatBlock', 'H1')" title="Заголовок 1">H1</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('formatBlock', 'H2')" title="Заголовок 2">H2</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('formatBlock', 'H3')" title="Заголовок 3">H3</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('formatBlock', 'P')" title="Параграф">¶</button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); formatText('removeFormat')" title="Очистить формат">✖</button>
             </div>
 
             <input type="text" class="editor-input" id="docTitleInput" placeholder="Название документа" oninput="updateCurrentDoc()">
             
-            <textarea class="editor-textarea" id="docContentInput" placeholder="Введите текст сценария..." oninput="updateCurrentDoc()"></textarea>
+            <div contenteditable="true" class="editor-textarea" id="docContentInput" placeholder="Введите текст сценария..." oninput="updateCurrentDoc()"></div>
             
             <div class="editor-stats">
                 <span id="wordCount">Слов: 0</span>
@@ -797,7 +885,6 @@
             
             const content = document.createElement('div');
             content.className = `tree-node-content ${currentDocId === doc.id ? 'active' : ''}`;
-            content.onclick = () => selectDocument(doc.id);
             
             const toggle = document.createElement('span');
             toggle.className = `tree-toggle ${hasChildren ? '' : 'hidden'}`;
@@ -812,8 +899,12 @@
             icon.textContent = '📄';
             
             const label = document.createElement('span');
-            label.className = 'tree-label';
+            label.className = 'tree-label tree-label-truncated';
             label.textContent = doc.title;
+            
+            const labelFull = document.createElement('span');
+            labelFull.className = 'tree-label-full';
+            labelFull.textContent = doc.title;
             
             const actions = document.createElement('div');
             actions.className = 'tree-actions';
@@ -836,7 +927,17 @@
             content.appendChild(toggle);
             content.appendChild(icon);
             content.appendChild(label);
+            content.appendChild(labelFull);
             content.appendChild(actions);
+            
+            // Click on content (excluding toggle) selects the document
+            content.addEventListener('click', (e) => {
+                // Don't select if clicking on toggle or action buttons
+                if (e.target === toggle || e.target.closest('.tree-actions')) {
+                    return;
+                }
+                selectDocument(doc.id);
+            });
             
             node.appendChild(content);
             
@@ -873,7 +974,7 @@
             document.getElementById('editorPanel').classList.add('active');
             document.getElementById('editorTitle').textContent = doc.title;
             document.getElementById('docTitleInput').value = doc.title;
-            document.getElementById('docContentInput').value = doc.content || '';
+            document.getElementById('docContentInput').innerHTML = doc.content || '';
             updateStats();
         }
 
@@ -890,7 +991,7 @@
             const doc = project.documents.find(d => d.id === currentDocId);
             
             doc.title = document.getElementById('docTitleInput').value;
-            doc.content = document.getElementById('docContentInput').value;
+            doc.content = document.getElementById('docContentInput').innerHTML;
             doc.updatedAt = new Date().toISOString();
             project.updatedAt = new Date().toISOString();
             
@@ -903,10 +1004,11 @@
         function formatText(command, value = null) {
             document.execCommand(command, false, value);
             document.getElementById('docContentInput').focus();
+            updateCurrentDoc();
         }
 
         function updateStats() {
-            const content = document.getElementById('docContentInput').value;
+            const content = document.getElementById('docContentInput').innerText || '';
             const words = content.trim() ? content.trim().split(/\s+/).length : 0;
             const chars = content.length;
             
