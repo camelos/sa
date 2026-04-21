@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Script Writer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary-color: #ec4899;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
+            height: 100vh;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* Sidebar - Projects */
+        .sidebar {
+            background: var(--bg-dark);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .project-item:hover {
+            background: var(--bg-hover);
+            transform: translateX(5px);
+        }
+
+        .project-item.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+        }
+
+        .project-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .project-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content - Document Tree */
+        .main-content {
+            background: var(--bg-card);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .document-tree {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tree-node {
+            margin: 4px 0;
+        }
+
+        .tree-node-content {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .tree-node-content:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-color);
+        }
+
+        .tree-node-content.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+            border-color: var(--primary-color);
+        }
+
+        .tree-toggle {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .tree-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-toggle.hidden {
+            visibility: hidden;
+        }
+
+        .tree-icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .tree-label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .tree-actions {
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .tree-node-content:hover .tree-actions {
+            opacity: 1;
+        }
+
+        .tree-children {
+            margin-left: 24px;
+            border-left: 2px solid var(--border-color);
+            padding-left: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        /* Editor Panel */
+        .editor-panel {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .editor-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .toolbar-btn {
+            padding: 6px 10px;
+            background: var(--bg-hover);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .toolbar-btn.active {
+            background: var(--primary-color);
+        }
+
+        .editor-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.2s ease;
+        }
+
+        .editor-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .editor-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+            transition: border-color 0.2s ease;
+        }
+
+        .editor-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .editor-stats {
+            margin-top: 15px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .app-container {
+                grid-template-columns: 250px 1fr;
+            }
+            
+            .editor-panel {
+                display: none;
+                position: fixed;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 400px;
+                z-index: 100;
+            }
+            
+            .editor-panel.active {
+                display: flex;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border-left: 4px solid var(--success);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">🎮 Game Script</h1>
+                <button class="btn btn-primary btn-sm" onclick="showNewProjectModal()">
+                    + Проект
+                </button>
+            </div>
+            <ul class="project-list" id="projectList"></ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="main-header">
+                <h2 class="main-title" id="mainTitle">Выберите проект</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="addRootDocument()" id="addDocBtn" style="display: none;">
+                        📄 Добавить документ
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="exportProject()" id="exportBtn" style="display: none;">
+                        💾 Экспорт в HTML
+                    </button>
+                </div>
+            </div>
+            <div class="document-tree" id="documentTree">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📁</div>
+                    <div class="empty-state-title">Создайте или выберите проект</div>
+                    <p>Начните работу над сценарием вашей игры</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Editor Panel -->
+        <aside class="editor-panel" id="editorPanel">
+            <div class="editor-header">
+                <h3 class="editor-title" id="editorTitle">Редактирование</h3>
+                <button class="btn btn-secondary btn-sm" onclick="closeEditor()">✕</button>
+            </div>
+            
+            <div class="toolbar">
+                <button class="toolbar-btn" onclick="formatText('bold')" title="Жирный"><b>B</b></button>
+                <button class="toolbar-btn" onclick="formatText('italic')" title="Курсив"><i>I</i></button>
+                <button class="toolbar-btn" onclick="formatText('underline')" title="Подчеркнутый"><u>U</u></button>
+                <button class="toolbar-btn" onclick="formatText('strikeThrough')" title="Зачеркнутый"><s>S</s></button>
+                <button class="toolbar-btn" onclick="formatText('justifyLeft')" title="По левому краю">⬅</button>
+                <button class="toolbar-btn" onclick="formatText('justifyCenter')" title="По центру">↔</button>
+                <button class="toolbar-btn" onclick="formatText('justifyRight')" title="По правому краю">➡</button>
+                <button class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Список">•</button>
+                <button class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Нумерованный список">1.</button>
+                <button class="toolbar-btn" onclick="formatText('formatBlock', 'H1')" title="Заголовок 1">H1</button>
+                <button class="toolbar-btn" onclick="formatText('formatBlock', 'H2')" title="Заголовок 2">H2</button>
+                <button class="toolbar-btn" onclick="formatText('formatBlock', 'H3')" title="Заголовок 3">H3</button>
+                <button class="toolbar-btn" onclick="formatText('formatBlock', 'P')" title="Параграф">¶</button>
+                <button class="toolbar-btn" onclick="formatText('removeFormat')" title="Очистить формат">✖</button>
+            </div>
+
+            <input type="text" class="editor-input" id="docTitleInput" placeholder="Название документа" oninput="updateCurrentDoc()">
+            
+            <textarea class="editor-textarea" id="docContentInput" placeholder="Введите текст сценария..." oninput="updateCurrentDoc()"></textarea>
+            
+            <div class="editor-stats">
+                <span id="wordCount">Слов: 0</span>
+                <span id="charCount">Символов: 0</span>
+                <span id="lastSaved">Сохранено: только что</span>
+            </div>
+        </aside>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="newProjectModal">
+        <div class="modal">
+            <h3 class="modal-title">Новый проект</h3>
+            <input type="text" class="editor-input" id="newProjectName" placeholder="Название проекта">
+            <input type="text" class="editor-input" id="newProjectDesc" placeholder="Описание (необязательно)">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('newProjectModal')">Отмена</button>
+                <button class="btn btn-primary" onclick="createProject()">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Document Modal -->
+    <div class="modal-overlay" id="newDocModal">
+        <div class="modal">
+            <h3 class="modal-title">Новый документ</h3>
+            <input type="text" class="editor-input" id="newDocName" placeholder="Название документа">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('newDocModal')">Отмена</button>
+                <button class="btn btn-primary" onclick="createDocument()">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // State
+        let projects = JSON.parse(localStorage.getItem('gameScriptProjects')) || [];
+        let currentProjectId = null;
+        let currentDocId = null;
+        let newDocParentId = null;
+
+        // Initialize
+        function init() {
+            renderProjects();
+            loadFromStorage();
+        }
+
+        // Storage
+        function saveToStorage() {
+            localStorage.setItem('gameScriptProjects', JSON.stringify(projects));
+        }
+
+        function loadFromStorage() {
+            // Already loaded in init
+        }
+
+        // Projects
+        function showNewProjectModal() {
+            document.getElementById('newProjectName').value = '';
+            document.getElementById('newProjectDesc').value = '';
+            showModal('newProjectModal');
+        }
+
+        function createProject() {
+            const name = document.getElementById('newProjectName').value.trim();
+            const desc = document.getElementById('newProjectDesc').value.trim();
+            
+            if (!name) {
+                showNotification('Введите название проекта', true);
+                return;
+            }
+
+            const project = {
+                id: Date.now().toString(),
+                name: name,
+                description: desc,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                documents: []
+            };
+
+            projects.push(project);
+            saveToStorage();
+            renderProjects();
+            hideModal('newProjectModal');
+            selectProject(project.id);
+            showNotification('Проект создан!');
+        }
+
+        function selectProject(projectId) {
+            currentProjectId = projectId;
+            currentDocId = null;
+            
+            renderProjects();
+            renderDocumentTree();
+            
+            document.getElementById('addDocBtn').style.display = 'inline-flex';
+            document.getElementById('exportBtn').style.display = 'inline-flex';
+            document.getElementById('mainTitle').textContent = getCurrentProject().name;
+            
+            closeEditor();
+        }
+
+        function getCurrentProject() {
+            return projects.find(p => p.id === currentProjectId);
+        }
+
+        function deleteProject(projectId, event) {
+            event.stopPropagation();
+            if (!confirm('Вы уверены, что хотите удалить этот проект?')) return;
+            
+            projects = projects.filter(p => p.id !== projectId);
+            saveToStorage();
+            
+            if (currentProjectId === projectId) {
+                currentProjectId = null;
+                document.getElementById('documentTree').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📁</div>
+                        <div class="empty-state-title">Создайте или выберите проект</div>
+                        <p>Начните работу над сценарием вашей игры</p>
+                    </div>
+                `;
+                document.getElementById('addDocBtn').style.display = 'none';
+                document.getElementById('exportBtn').style.display = 'none';
+                document.getElementById('mainTitle').textContent = 'Выберите проект';
+            }
+            
+            renderProjects();
+            showNotification('Проект удален');
+        }
+
+        // Documents
+        function addRootDocument() {
+            newDocParentId = null;
+            document.getElementById('newDocName').value = '';
+            showModal('newDocModal');
+        }
+
+        function addChildDocument(parentId, event) {
+            event.stopPropagation();
+            newDocParentId = parentId;
+            document.getElementById('newDocName').value = '';
+            showModal('newDocModal');
+        }
+
+        function createDocument() {
+            const name = document.getElementById('newDocName').value.trim();
+            
+            if (!name) {
+                showNotification('Введите название документа', true);
+                return;
+            }
+
+            const project = getCurrentProject();
+            const doc = {
+                id: Date.now().toString(),
+                title: name,
+                content: '',
+                parentId: newDocParentId,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            project.documents.push(doc);
+            project.updatedAt = new Date().toISOString();
+            saveToStorage();
+            renderDocumentTree();
+            hideModal('newDocModal');
+            showNotification('Документ создан!');
+        }
+
+        function deleteDocument(docId, event) {
+            event.stopPropagation();
+            if (!confirm('Удалить этот документ и все дочерние?')) return;
+            
+            const project = getCurrentProject();
+            
+            function deleteRecursive(id) {
+                const children = project.documents.filter(d => d.parentId === id);
+                children.forEach(child => deleteRecursive(child.id));
+                project.documents = project.documents.filter(d => d.id !== id);
+            }
+            
+            deleteRecursive(docId);
+            project.updatedAt = new Date().toISOString();
+            saveToStorage();
+            
+            if (currentDocId === docId) {
+                closeEditor();
+            }
+            
+            renderDocumentTree();
+            showNotification('Документ удален');
+        }
+
+        function selectDocument(docId) {
+            currentDocId = docId;
+            const project = getCurrentProject();
+            const doc = project.documents.find(d => d.id === docId);
+            
+            renderDocumentTree();
+            openEditor(doc);
+        }
+
+        // Tree Rendering
+        function renderDocumentTree() {
+            const project = getCurrentProject();
+            const container = document.getElementById('documentTree');
+            
+            if (!project || project.documents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📄</div>
+                        <div class="empty-state-title">Нет документов</div>
+                        <p>Добавьте первый документ для начала работы</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const rootDocs = project.documents.filter(d => !d.parentId);
+            container.innerHTML = '';
+            
+            rootDocs.forEach(doc => {
+                container.appendChild(createTreeNode(doc));
+            });
+        }
+
+        function createTreeNode(doc) {
+            const project = getCurrentProject();
+            const children = project.documents.filter(d => d.parentId === doc.id);
+            const hasChildren = children.length > 0;
+            
+            const node = document.createElement('div');
+            node.className = 'tree-node';
+            
+            const content = document.createElement('div');
+            content.className = `tree-node-content ${currentDocId === doc.id ? 'active' : ''}`;
+            content.onclick = () => selectDocument(doc.id);
+            
+            const toggle = document.createElement('span');
+            toggle.className = `tree-toggle ${hasChildren ? '' : 'hidden'}`;
+            toggle.innerHTML = '▶';
+            toggle.onclick = (e) => {
+                e.stopPropagation();
+                toggleNode(doc.id);
+            };
+            
+            const icon = document.createElement('span');
+            icon.className = 'tree-icon';
+            icon.textContent = '📄';
+            
+            const label = document.createElement('span');
+            label.className = 'tree-label';
+            label.textContent = doc.title;
+            
+            const actions = document.createElement('div');
+            actions.className = 'tree-actions';
+            
+            const addChildBtn = document.createElement('button');
+            addChildBtn.className = 'btn btn-secondary btn-sm';
+            addChildBtn.innerHTML = '+';
+            addChildBtn.onclick = (e) => addChildDocument(doc.id, e);
+            addChildBtn.title = 'Добавить дочерний';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.innerHTML = '✕';
+            deleteBtn.onclick = (e) => deleteDocument(doc.id, e);
+            deleteBtn.title = 'Удалить';
+            
+            actions.appendChild(addChildBtn);
+            actions.appendChild(deleteBtn);
+            
+            content.appendChild(toggle);
+            content.appendChild(icon);
+            content.appendChild(label);
+            content.appendChild(actions);
+            
+            node.appendChild(content);
+            
+            if (hasChildren) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'tree-children';
+                childrenContainer.id = `children-${doc.id}`;
+                
+                children.forEach(child => {
+                    childrenContainer.appendChild(createTreeNode(child));
+                });
+                
+                node.appendChild(childrenContainer);
+            }
+            
+            return node;
+        }
+
+        function toggleNode(docId) {
+            const childrenContainer = document.getElementById(`children-${docId}`);
+            const toggle = childrenContainer.previousElementSibling.querySelector('.tree-toggle');
+            
+            if (childrenContainer.classList.contains('expanded')) {
+                childrenContainer.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+            } else {
+                childrenContainer.classList.add('expanded');
+                toggle.classList.add('expanded');
+            }
+        }
+
+        // Editor
+        function openEditor(doc) {
+            document.getElementById('editorPanel').classList.add('active');
+            document.getElementById('editorTitle').textContent = doc.title;
+            document.getElementById('docTitleInput').value = doc.title;
+            document.getElementById('docContentInput').value = doc.content || '';
+            updateStats();
+        }
+
+        function closeEditor() {
+            document.getElementById('editorPanel').classList.remove('active');
+            currentDocId = null;
+            renderDocumentTree();
+        }
+
+        function updateCurrentDoc() {
+            if (!currentDocId) return;
+            
+            const project = getCurrentProject();
+            const doc = project.documents.find(d => d.id === currentDocId);
+            
+            doc.title = document.getElementById('docTitleInput').value;
+            doc.content = document.getElementById('docContentInput').value;
+            doc.updatedAt = new Date().toISOString();
+            project.updatedAt = new Date().toISOString();
+            
+            saveToStorage();
+            updateStats();
+            renderDocumentTree();
+            document.getElementById('editorTitle').textContent = doc.title;
+        }
+
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('docContentInput').focus();
+        }
+
+        function updateStats() {
+            const content = document.getElementById('docContentInput').value;
+            const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+            const chars = content.length;
+            
+            document.getElementById('wordCount').textContent = `Слов: ${words}`;
+            document.getElementById('charCount').textContent = `Символов: ${chars}`;
+            document.getElementById('lastSaved').textContent = 'Сохранено: только что';
+        }
+
+        // Export
+        function exportProject() {
+            const project = getCurrentProject();
+            if (!project) return;
+            
+            const rootDocs = project.documents.filter(d => !d.parentId);
+            
+            const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${project.name} - Сценарий</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .doc-container {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        .doc-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #6366f1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .doc-title:hover {
+            color: #ec4899;
+        }
+        .doc-content {
+            line-height: 1.8;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+        }
+        .children {
+            margin-left: 30px;
+            border-left: 2px solid #334155;
+            padding-left: 20px;
+            margin-top: 15px;
+            display: none;
+        }
+        .children.expanded {
+            display: block;
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+        .meta {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 ${project.name}</h1>
+        ${generateExportHTML(rootDocs, project.documents)}
+    </div>
+    <script>
+        function toggleChildren(id) {
+            const children = document.getElementById('children-' + id);
+            const icon = document.getElementById('icon-' + id);
+            if (children.classList.contains('expanded')) {
+                children.classList.remove('expanded');
+                icon.classList.remove('expanded');
+            } else {
+                children.classList.add('expanded');
+                icon.classList.add('expanded');
+            }
+        }
+    <\/script>
+</body>
+</html>`;
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${project.name.replace(/[^a-zа-яё0-9]/gi, '_')}_script.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Проект экспортирован в HTML!');
+        }
+
+        function generateExportHTML(docs, allDocs, level = 0) {
+            let html = '';
+            
+            docs.forEach(doc => {
+                const children = allDocs.filter(d => d.parentId === doc.id);
+                const hasChildren = children.length > 0;
+                
+                html += `
+                <div class="doc-container">
+                    <div class="doc-title" onclick="toggleChildren('${doc.id}')">
+                        <span class="toggle-icon" id="icon-${doc.id}">${hasChildren ? '▶' : '•'}</span>
+                        ${escapeHtml(doc.title)}
+                    </div>
+                    <div class="doc-content">${escapeHtml(doc.content || '')}</div>
+                    <div class="meta">Создан: ${new Date(doc.createdAt).toLocaleDateString('ru-RU')}</div>
+                    ${hasChildren ? generateExportHTML(children, allDocs, level + 1).replace('<div class="doc-container">', `<div class="children" id="children-${doc.id}"><div class="doc-container">`).replace(/<\/div>$/g, '</div></div>') : ''}
+                </div>`;
+            });
+            
+            return html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // UI Helpers
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projectList');
+            
+            if (projects.length === 0) {
+                container.innerHTML = '<li style="color: var(--text-secondary); text-align: center; padding: 20px;">Нет проектов</li>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            projects.forEach(project => {
+                const li = document.createElement('li');
+                li.className = `project-item ${currentProjectId === project.id ? 'active' : ''}`;
+                li.onclick = () => selectProject(project.id);
+                
+                const docCount = project.documents.length;
+                const lastUpdated = new Date(project.updatedAt).toLocaleDateString('ru-RU');
+                
+                li.innerHTML = `
+                    <div class="project-name">${escapeHtml(project.name)}</div>
+                    <div class="project-info">${docCount} док. • ${lastUpdated}</div>
+                `;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-danger btn-sm';
+                deleteBtn.innerHTML = '✕';
+                deleteBtn.style.position = 'absolute';
+                deleteBtn.style.right = '10px';
+                deleteBtn.style.top = '10px';
+                deleteBtn.onclick = (e) => deleteProject(project.id, e);
+                deleteBtn.style.opacity = '0';
+                deleteBtn.style.transition = 'opacity 0.2s';
+                
+                li.style.position = 'relative';
+                li.onmouseenter = () => deleteBtn.style.opacity = '1';
+                li.onmouseleave = () => deleteBtn.style.opacity = '0';
+                
+                li.appendChild(deleteBtn);
+                container.appendChild(li);
+            });
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+            
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (currentDocId) {
+                    updateCurrentDoc();
+                    showNotification('Сохранено!');
+                }
+            }
+        });
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
